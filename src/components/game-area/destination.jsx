@@ -41,7 +41,8 @@ export const Destination = ({
         handlePlanetSelection(newValue)
       }}
       options={planetOptions}
-      style={{ width: 300 }}
+      style={{ width: 250 }}
+      size="small"
       renderInput={(params) => <TextField {...params} required variant='outlined' label="Movie" />}
     />
     {planet && (
