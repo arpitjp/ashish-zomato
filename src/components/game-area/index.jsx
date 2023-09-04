@@ -15,7 +15,7 @@ const useStyles = makeStyles(() => ({
   allDestinationsContainer: {
     marginTop: '32px',
     display: 'flex',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'center',
     flexWrap: 'wrap',
     gap: '20px',
@@ -26,26 +26,64 @@ const AllDestinations = ({ planets, vehicles }) => {
   // hooks
   const classes = useStyles();
   const [selectedData, setSelectedData] = useState({
-    "planet_names": [],
-    "vehicle_names": []
+    "planet_names": [...Array(DESTINATIONS.length)],
+    "vehicle_names": [...Array(DESTINATIONS.length)]
   });
-  const planetData = useMemo(() => planets.map(obj => ({ ...obj, available: 1 })), [planets]);
-  const vehicleData = useMemo(() => vehicles.map(obj => ({ ...obj, available: obj.total_no })), [vehicles]);
+  const [planetData, setPlanetData] = useState(planets);
+  const [vehicleData, setVehicleData] = useState(vehicles);
 
   // event handlers
   const handlePlanetSelection = (index, newValue) => {
     const prevValue = selectedData["planet_names"]?.[index];
+
     // change selectedData
-    const newSelectedData = 
-    // change planetData
+    const newSelectedData = structuredClone(selectedData);
+    newSelectedData["planet_names"][index] = newValue;
+    setSelectedData(newSelectedData);
+
+    // change available planets
+    const newPlanetData = structuredClone(planetData);
+    newPlanetData.forEach(obj => {
+      if (obj.name === prevValue) {
+        obj.available++;
+      } else if (obj.name === newValue) {
+        obj.available--;
+      }
+    });
+    setPlanetData(newPlanetData);
   }
-  const handleVehicleSelection = (index, prevValue, newValue) => {
-    //
+  const handleVehicleSelection = (index, newValue) => {
+    const prevValue = selectedData["vehicle_names"]?.[index];
+
+    // change selectedData
+    const newSelectedData = structuredClone(selectedData);
+    newSelectedData["vehicle_names"][index] = newValue;
+    setSelectedData(newSelectedData);
+
+    // change available vehicles
+    const newVehicleData = structuredClone(vehicleData);
+    newVehicleData.forEach(obj => {
+      if (obj.name === prevValue) {
+        obj.available++;
+      } else if (obj.name === newValue) {
+        obj.available--;
+      }
+    });
+    setVehicleData(newVehicleData);
   }
 
   // rendering logic
   return <div className={classes.allDestinationsContainer}>
-    {DESTINATIONS.map((val) => <Destination key={val} index={val} />)}
+    {DESTINATIONS.map((i) => <Destination
+      key={i}
+      index={i}
+      planet={selectedData["planet_names"][i]}
+      handlePlanetSelection={(newVal) => handlePlanetSelection(i, newVal)}
+      planetData={planetData}
+      vehicle={selectedData["vehicle_names"][i]}
+      handleVehicleSelection={(newVal) => handleVehicleSelection(i, newVal)}
+      vehicleData={vehicleData}
+    />)}
   </div>
 }
 

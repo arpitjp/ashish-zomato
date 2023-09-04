@@ -1,6 +1,6 @@
-import { Typography, TextField, FormControl, FormLabel, RadioGroup, Radio, FormControlLabel } from '@material-ui/core';
+import { Typography, TextField, FormControl, RadioGroup, Radio, FormControlLabel } from '@material-ui/core';
 import { Autocomplete } from '@material-ui/lab';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 
 const options = [
   { label: 'one' },
@@ -16,9 +16,18 @@ const radioOptions = [
   "four"
 ]
 
-export const Destination = ({ index }) => {
-  const [value, setValue] = useState(null);
-  const [radioValue, handleRadioValue] = useState(null);
+export const Destination = ({
+  index,
+  planet,
+  handlePlanetSelection,
+  planetData,
+  vehicle,
+  handleVehicleSelection,
+  vehicleData,
+}) => {
+  const planetDistance = planetData?.[index]?.distance;
+  const planetOptions = useMemo(() => planetData?.filter(obj => obj.available).map(obj => obj.name), [planetData]);
+
   return <div style={{
     display: 'flex',
     flexDirection: 'column',
@@ -27,18 +36,23 @@ export const Destination = ({ index }) => {
     <Typography>Destination {index}</Typography>
     <Autocomplete
       disablePortal
-      value={value}
-      getOptionLabel={(option) => option.label}
-      onChange={(e, newValue) => setValue(newValue)}
-      options={options}
+      value={planet}
+      onChange={(e, newValue) => {
+        handlePlanetSelection(newValue)
+      }}
+      options={planetOptions}
       style={{ width: 300 }}
       renderInput={(params) => <TextField {...params} required variant='outlined' label="Movie" />}
     />
-    {value && (
+    {planet && (
       <FormControl component="fieldset" required>
-        <FormLabel component="legend">Gender</FormLabel>
-        <RadioGroup aria-label="gender" name="gender1" value={radioValue} onChange={(e) => handleRadioValue(e.target.value)}>
-          {radioOptions.map((val, index) => <FormControlLabel value={val} control={<Radio />} key={index} label={val} />)}
+        <RadioGroup value={vehicle} onChange={(e) => handleVehicleSelection(e.target.value)}>
+          {vehicleData.map((obj, index) => {
+            const unReachable = obj.max_distance < planetDistance;
+            const disabled = !obj.available || unReachable;
+            const label = `${obj.name} (${obj.available})${unReachable ? ' (Not enough range)' : ''}`;
+            return <FormControlLabel value={obj.name} label={label} disabled={disabled} control={<Radio />} key={index} />
+          })}
         </RadioGroup>
       </FormControl>
     )}
