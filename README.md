@@ -1,5 +1,5 @@
 # Zomato task
 
 ## Run locally
-1. `npm i`
+1. `npm ci`
 2. `npm run dev`
